@@ -14,7 +14,7 @@ Ronney Agra
 Thiago Marum
 
 ## Desenvolvedores
-André de Souza Neves
+André de Sousa Neves
 
 Eduardo Brites Coutinho
 
