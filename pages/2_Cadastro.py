@@ -102,10 +102,14 @@ if tipoCadastro == "Projetos":
         except Exception as e:
             st.error(f"Erro ao buscar clientes: {e}")
             clientes = []
-        options = [(c["id_cli"], f"{c['nome_cli']} ({c['email_cli']})") for c in clientes]
-        selected = st.selectbox("Cliente", options, format_func=lambda x: x[1])
         
-        cliente_id_cli = selected[0]
+        if clientes:
+            options = [(c["id_cli"], f"{c['nome_cli']} ({c['email_cli']})") for c in clientes]
+            selected = st.selectbox("Cliente", options, format_func=lambda x: x[1])
+            cliente_id_cli = selected[0]
+        else:
+            st.warning("Sem clientes cadastrados!")
+            
         if st.button(label = "Cadastrar projeto", type="primary"):
             projeto_data = {
                 "nome_proj": nome_proj,
@@ -128,29 +132,41 @@ if tipoCadastro == "Projetos":
         except Exception as e:
             st.error(f"Erro ao buscar projetos: {e}")
             projetos = []
-        options = [(p["id_proj"], f"{p['nome_proj']}") for p in projetos]
-        selected = st.selectbox("Projeto", options, format_func=lambda x: x[1])
         
-        projeto_id_proj = selected[0]
+        if projetos:
+            options = [(p["id_proj"], f"{p['nome_proj']}") for p in projetos]
+            selected = st.selectbox("Projeto", options, format_func=lambda x: x[1])
+            projeto_id_proj = selected[0]
+        else:
+            st.warning("Sem projetos cadastrados!")
+        
         try:
             response = requests.get(api_url+"fornecedores/")
             fornecedores = response.json() if response.status_code == 200 else []
         except Exception as e:
             st.error(f"Erro ao buscar fornecedores: {e}")
             fornecedores = []
-        options = [(f["id_fornec"], f"{f['nome_fornec']} ({f['email_fornec']})") for f in fornecedores]
-        selected = st.selectbox("Fornecedor", options, format_func=lambda x: x[1])
         
-        produto_fornecedor_id_fornec = selected[0]
+        if fornecedores:
+            options = [(f["id_fornec"], f"{f['nome_fornec']} ({f['email_fornec']})") for f in fornecedores]
+            selected = st.selectbox("Fornecedor", options, format_func=lambda x: x[1])
+            produto_fornecedor_id_fornec = selected[0]
+        else:
+            st.warning("Sem fornecedores cadastrados!")
+            
         try:
             response = requests.get(api_url+"produtos/")
             produtos = response.json() if response.status_code == 200 else []
         except Exception as e:
             st.error(f"Erro ao buscar produtos: {e}")
-            projetos = []
-        options = [(p["fornecedor_id_fornec"], p["id_prod"], p["colecao_prod"], p["cor_prod"], f"{p['nome_prod']}") for p in produtos if p["fornecedor_id_fornec"] == produto_fornecedor_id_fornec]
-        selected = st.selectbox("Produto", options, format_func=lambda x: f"{x[4]} ({x[3]})")
-        produto_id_prod = selected[0]
+            produtos = []
+        
+        if produtos:
+            options = [(p["fornecedor_id_fornec"], p["id_prod"], p["colecao_prod"], p["cor_prod"], f"{p['nome_prod']}") for p in produtos if p["fornecedor_id_fornec"] == produto_fornecedor_id_fornec]
+            selected = st.selectbox("Produto", options, format_func=lambda x: f"{x[4]} ({x[3]})")
+            produto_id_prod = selected[0]
+        else:
+            st.warning("Sem produtos cadastrados!")
         
         quantidade_prod = st.number_input(label="Quantidade", format="%0i")
         if st.button(label = "Adicionar"):
@@ -180,10 +196,14 @@ if tipoCadastro == "Produtos":
         except Exception as e:
             st.error(f"Erro ao buscar fornecedores: {e}")
             fornecedores = []
-        options = [(f["id_fornec"], f"{f['nome_fornec']} ({f['email_fornec']})") for f in fornecedores]
-        selected = st.selectbox("Fornecedor", options, format_func=lambda x: x[1])
         
-        fornecedor_id_fornec = selected[0]
+        if fornecedores:
+            options = [(f["id_fornec"], f"{f['nome_fornec']} ({f['email_fornec']})") for f in fornecedores]
+            selected = st.selectbox("Fornecedor", options, format_func=lambda x: x[1])
+            fornecedor_id_fornec = selected[0]
+        else:
+            st.warning("Sem fornecedores cadastrados!")
+            
         if st.checkbox(label = "Bordado?"):
             bordado_prod = 1
             corlinha_prod = st.text_input(label = "Cor da linha")
