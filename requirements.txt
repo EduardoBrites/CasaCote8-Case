@@ -1,0 +1,4 @@
+sqlmodel
+fastapi
+uvicorn
+models

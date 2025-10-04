@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="CasaCote8 - Pedidos", 
+    page_title="CasaCote8 - Procurar", 
     layout="wide")
 
 st.markdown("""

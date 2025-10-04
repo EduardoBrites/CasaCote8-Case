@@ -1,7 +1,12 @@
 import streamlit as st
+import requests
+from fastapi import FastAPI, HTTPException
+from sqlmodel import Session
+from database.model import Cliente, Fornecedor, Produto, Projeto, ProjetoProduto
+from database.banco import engine
 
 st.set_page_config(
-    page_title="CasaCote8 - Novo Pedido", 
+    page_title="CasaCote8 - Cadastro", 
     layout="wide")
 
 st.markdown("""
@@ -12,12 +17,18 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+##API
+api_url = "http://127.0.0.1:8000/"
+
 with st.sidebar:
     col1, col2 = st.columns(2)
     
     with col1:
         st.image("./assets/img/CasaCote8Logo.png", use_container_width=True)
-        
+
+st.title("Cadastro de infromações")
+st.divider()
+
 #col1, col2, col3, col4 = st.columns([1, 3, 6, 1])
 #
 #with col2:
@@ -48,8 +59,7 @@ with st.sidebar:
 #        st.write("")
 #        st.button(label = "Cadastrar Pedido", type="primary")
 
-def adicionar():
-    return
+
 
 col1, col2, col3 = st.columns([1, 5, 1])
 
@@ -60,11 +70,25 @@ col1, col2, col3 = st.columns([5, 1, 7])
 
 if tipoCadastro == "Clientes":
     with col1:
-        st.text_input(label="Nome do cliente:")
-        st.number_input(label="Telefone", value=None)
-        st.number_input(label="CPF / CNPJ", value=None)
-        st.text_input(label="Email")
-        st.button(label = "Cadastrar", type = "primary")
+        nome_cli = st.text_input(label="Nome do cliente:")
+        tel_cli = st.number_input(label="Telefone", format="%0i", value=None)
+        cpfcnpj_cli = st.number_input(label="CPF / CNPJ", format="%0i", value=None)
+        email_cli = st.text_input(label="Email")
+        if st.button(label = "Cadastrar", type = "primary"):
+            cliente_data = {
+                "nome_cli": nome_cli,
+                "tel_cli": int(tel_cli) if tel_cli else None,
+                "cpfcnpj_cli": int(cpfcnpj_cli) if cpfcnpj_cli else None,
+                "email_cli": email_cli 
+            }
+            try:
+                response = requests.post(api_url+"clientes/", json=cliente_data)
+                if response.status_code == 200:
+                    st.success("Cliente cadastrado com sucesso!")
+                else:
+                    st.error(f"Erro ao cadastrar: {response.text}")
+            except Exception as e:
+                st.error(f"Erro ao conectar com a API: {e}")
 
 if tipoCadastro == "Projetos":
     with col1:
@@ -76,7 +100,7 @@ if tipoCadastro == "Projetos":
         projeto = st.selectbox("Projetos", ["Projeto", "Projeto1"])
         if projeto != "Projeto":
             st.selectbox("Adicionar produto ao projeto", ["Produto"])
-            st.button(label = "Adicionar", on_click=adicionar())
+            st.button(label = "Adicionar")
 
 if tipoCadastro == "Produtos":
     with col1:
@@ -95,7 +119,7 @@ if tipoCadastro == "Produtos":
 if tipoCadastro == "Fornecedores":
     with col1:
         st.text_input(label = "Nome do fornecedor")
-        st.number_input(label= "CPF / CNPJ", format="%0i", value=None)
         st.number_input(label= "Telefone", format="%0i", value=None)
+        st.number_input(label= "CPF / CNPJ", format="%0i", value=None)
         st.text_input(label = "Email")
         st.button(label = "Cadastrar fornecedor", type = "primary")
