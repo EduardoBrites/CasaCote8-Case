@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import datetime
 from fastapi import FastAPI, HTTPException
 from sqlmodel import Session
 from database.model import Cliente, Fornecedor, Produto, Projeto, ProjetoProduto
@@ -71,8 +72,8 @@ col1, col2, col3 = st.columns([5, 1, 7])
 if tipoCadastro == "Clientes":
     with col1:
         nome_cli = st.text_input(label="Nome do cliente:")
-        tel_cli = st.number_input(label="Telefone", format="%0i", value=None)
-        cpfcnpj_cli = st.number_input(label="CPF / CNPJ", format="%0i", value=None)
+        tel_cli = st.number_input(label="Telefone", format="%0i")
+        cpfcnpj_cli = st.number_input(label="CPF / CNPJ", format="%0i")
         email_cli = st.text_input(label="Email")
         if st.button(label = "Cadastrar", type = "primary"):
             cliente_data = {
@@ -92,12 +93,14 @@ if tipoCadastro == "Clientes":
 
 if tipoCadastro == "Projetos":
     with col1:
-        prazo_proj = st.date_input(label = "Prazo de entrega")
+        nome_proj = st.text_input("Nome do projeto")
+        prazo_proj_date = st.date_input("Prazo de entrega")
+        prazo_proj = prazo_proj_date.isoformat()
         try:
             response = requests.get(api_url+"clientes/")
             clientes = response.json() if response.status_code == 200 else []
         except Exception as e:
-            st.error(f"Erro ao buscar fornecedores: {e}")
+            st.error(f"Erro ao buscar clientes: {e}")
             clientes = []
         options = [(c["id_cli"], f"{c['nome_cli']} ({c['email_cli']})") for c in clientes]
         selected = st.selectbox("Cliente", options, format_func=lambda x: x[1])
@@ -105,11 +108,12 @@ if tipoCadastro == "Projetos":
         cliente_id_cli = selected[0]
         if st.button(label = "Cadastrar projeto", type="primary"):
             projeto_data = {
+                "nome_proj": nome_proj,
                 "cliente_id_cli": cliente_id_cli,
                 "prazo_proj": prazo_proj
             }
             try:
-                response = requests.post(api_url+"projeto/", json=projeto_data)
+                response = requests.post(api_url+"projetos/", json=projeto_data)
                 if response.status_code == 200:
                     st.success("Projeto cadastrado com sucesso!")
                 else:
@@ -118,10 +122,52 @@ if tipoCadastro == "Projetos":
                 st.error(f"Erro ao conectar com a API: {e}")
     
     with col3:
-        projeto = st.selectbox("Projetos", ["Projeto", "Projeto1"])
-        if projeto != "Projeto":
-            st.selectbox("Adicionar produto ao projeto", ["Produto"])
-            st.button(label = "Adicionar")
+        try:
+            response = requests.get(api_url+"projetos/")
+            projetos = response.json() if response.status_code == 200 else []
+        except Exception as e:
+            st.error(f"Erro ao buscar projetos: {e}")
+            projetos = []
+        options = [(p["id_proj"], f"{p['nome_proj']}") for p in projetos]
+        selected = st.selectbox("Projeto", options, format_func=lambda x: x[1])
+        
+        projeto_id_proj = selected[0]
+        try:
+            response = requests.get(api_url+"fornecedores/")
+            fornecedores = response.json() if response.status_code == 200 else []
+        except Exception as e:
+            st.error(f"Erro ao buscar fornecedores: {e}")
+            fornecedores = []
+        options = [(f["id_fornec"], f"{f['nome_fornec']} ({f['email_fornec']})") for f in fornecedores]
+        selected = st.selectbox("Fornecedor", options, format_func=lambda x: x[1])
+        
+        produto_fornecedor_id_fornec = selected[0]
+        try:
+            response = requests.get(api_url+"produtos/")
+            produtos = response.json() if response.status_code == 200 else []
+        except Exception as e:
+            st.error(f"Erro ao buscar produtos: {e}")
+            projetos = []
+        options = [(p["fornecedor_id_fornec"], p["id_prod"], p["colecao_prod"], p["cor_prod"], f"{p['nome_prod']}") for p in produtos if p["fornecedor_id_fornec"] == produto_fornecedor_id_fornec]
+        selected = st.selectbox("Produto", options, format_func=lambda x: f"{x[4]} ({x[3]})")
+        produto_id_prod = selected[0]
+        
+        quantidade_prod = st.number_input(label="Quantidade", format="%0i")
+        if st.button(label = "Adicionar"):
+            projetoproduto_data = {
+            "projeto_id_proj": projeto_id_proj,
+            "produto_id_prod": produto_id_prod,
+            "produto_fornecedor_id_fornec": produto_fornecedor_id_fornec,
+            "quantidade_produto": quantidade_prod
+            }
+            try:
+                response = requests.post(api_url+"projetosprodutos/", json=projetoproduto_data)
+                if response.status_code == 200:
+                    st.success("Produto cadastrado no projeto com sucesso!")
+                else:
+                    st.error(f"Erro ao cadastrar: {response.text}")
+            except Exception as e:
+                st.error(f"Erro ao conectar com a API: {e}")
 
 if tipoCadastro == "Produtos":
     with col1:

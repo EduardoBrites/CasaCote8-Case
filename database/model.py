@@ -53,6 +53,7 @@ class Projeto(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
 
     id_proj: int | None = Field(primary_key=True)
+    nome_proj: Optional[str] = Field(default=None, max_length=150)
     prazo_proj: Optional[date] = None
     cliente_id_cli: int = Field(foreign_key="CLIENTE.id_cli")
 
@@ -68,7 +69,7 @@ class ProjetoProduto(SQLModel, table=True):
     produto_id_prod: int = Field(foreign_key="PRODUTO.id_prod", primary_key=True)
     produto_fornecedor_id_fornec: int = Field(foreign_key="FORNECEDOR.id_fornec", primary_key=True)
 
-    quantidade_produto: Optional[int] = None
+    quantidade_prod: Optional[int] = None
 
     projeto: Optional[Projeto] = Relationship(back_populates="produtos")
     produto: Optional[Produto] = Relationship(back_populates="projetos")

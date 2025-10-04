@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from sqlmodel import Session, select, SQLModel, create_engine
 from database.model import Cliente, Fornecedor, Produto, Projeto, ProjetoProduto
 from contextlib import asynccontextmanager
+from datetime import date
 
 #Utiliar toda vez que algo for alterado nesse doc:
 #uvicorn database.banco:app --reload
@@ -37,6 +38,11 @@ def listar_produtos():
 def listar_projetos():
     with Session(engine) as session:
         return session.exec(select(Projeto)).all()
+    
+@app.get("/projetosprodutos/")
+def listar_projetosprodutos():
+    with Session(engine) as session:
+        return session.exec(select(ProjetoProduto)).all()
 
 # Métodos Post
 
@@ -65,10 +71,22 @@ def cadastrar_produto(produto: Produto):
         return produto
     
 @app.post("/projetos/")
-def cadastrar_produto(projeto: Projeto):
+def cadastrar_projeto(projeto: Projeto):    
+    if isinstance(projeto.prazo_proj, str):
+        try:
+            projeto.prazo_proj = date.fromisoformat(projeto.prazo_proj)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Data inválida, use formato YYYY-MM-DD")
     with Session(engine) as session:
         session.add(projeto)
         session.commit()
         session.refresh(projeto)
         return projeto
 
+@app.post("/projetosprodutos/")
+def cadastrar_projetoproduto(projetoproduto: ProjetoProduto):
+    with Session(engine) as session:
+        session.add(projetoproduto)
+        session.commit()
+        session.refresh(projetoproduto)
+        return projetoproduto
