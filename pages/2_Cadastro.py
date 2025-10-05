@@ -27,7 +27,7 @@ with st.sidebar:
     with col1:
         st.image("./assets/img/CasaCote8Logo.png", use_container_width=True)
 
-st.title("Cadastro de infromações")
+st.title("Cadastro de informações")
 st.divider()
 
 #col1, col2, col3, col4 = st.columns([1, 3, 6, 1])
