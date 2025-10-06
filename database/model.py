@@ -10,7 +10,7 @@ class Cliente(SQLModel, table=True):
     id_cli: int | None = Field(primary_key=True)
     nome_cli: Optional[str] = Field(default=None, max_length=150)
     tel_cli: Optional[int] = Field(default=None)
-    cpfcnpj_cli: Optional[int] = Field(default=None, unique=True)
+    cpfcnpj_cli: Optional[int] = Field(default=None)
     email_cli: Optional[str] = Field(default=None, max_length=150)
 
     projetos: List["Projeto"] = Relationship(back_populates="cliente")
@@ -21,7 +21,7 @@ class Fornecedor(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
 
     id_fornec: int | None = Field(primary_key=True)
-    cpfcnpj_fornec: Optional[int] = Field(default=None, unique=True)
+    cpfcnpj_fornec: Optional[int] = Field(default=None)
     tel_fornec: Optional[int] = Field(default=None)
     nome_fornec: Optional[str] = Field(default=None, max_length=70)
     email_fornec: Optional[str] = Field(default=None, max_length=150)
