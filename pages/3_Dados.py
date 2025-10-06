@@ -17,6 +17,44 @@ st.markdown("""
 #API
 api_url = "http://127.0.0.1:8000/"
 
+try:
+    response = requests.get(api_url + "fornecedores/")
+    fornecedores = response.json() if response.status_code == 200 else []
+    df_fornecedores = pd.DataFrame(fornecedores)
+except Exception as e:
+    st.error(f"Erro ao buscar fornecedores: {e}")
+    df_fornecedores = pd.DataFrame()
+try:
+    response = requests.get(api_url + "clientes/")
+    clientes = response.json() if response.status_code == 200 else []
+    df_clientes = pd.DataFrame(clientes)
+except Exception as e:
+    st.error(f"Erro ao buscar clientes: {e}")
+    df_clientes = pd.DataFrame()
+try:
+    response = requests.get(api_url + "produtos/")
+    produtos = response.json() if response.status_code == 200 else []
+    df_produtos = pd.DataFrame(produtos)
+except Exception as e:
+    st.error(f"Erro ao buscar produtos: {e}")
+    df_produtos = pd.DataFrame()
+    
+try:
+    response = requests.get(api_url + "projetos/")
+    projetos = response.json() if response.status_code == 200 else []
+    df_projetos = pd.DataFrame(projetos)
+except Exception as e:
+    st.error(f"Erro ao buscar projetos: {e}")
+    df_projetos = pd.DataFrame()
+
+try:
+    response = requests.get(api_url + "projetosprodutos/")
+    projetosprodutos = response.json() if response.status_code == 200 else []
+    df_projetosprodutos = pd.DataFrame(projetosprodutos)
+except Exception as e:
+    st.error(f"Erro ao buscar os produtos de cada projeto: {e}")
+    df_projetosprodutos = pd.DataFrame()
+
 with st.sidebar:
     col1, col2 = st.columns(2)
     
@@ -28,9 +66,8 @@ endpoint_map = {
     "Fornecedores": "fornecedores/",
     "Produtos": "produtos/",
     "Projetos": "projetos/",
-    "ProjetoProduto": "projetoproduto/"
+    "ProjetoProduto": "projetosprodutos/"
 }
-
 
 opcao = st.selectbox(
     "Selecione a tabela para visualizar:",
@@ -51,47 +88,9 @@ def select_colunas(colunas):
     if not colunas_selecionadas:
         st.warning("Selecione as colunas para mostrar")
     else:
-        st.dataframe(df[colunas_selecionadas], use_container_width=True, column_order=ordem(colunas))
+        st.dataframe(df[colunas_selecionadas], use_container_width=True, column_order=ordem(colunas), height=250)
 
-def mostrar_tabela(df, opcao):
-    
-    try:
-        response = requests.get(api_url + "fornecedores/")
-        fornecedores = response.json() if response.status_code == 200 else []
-        df_fornecedores = pd.DataFrame(fornecedores)
-    except Exception as e:
-        st.error(f"Erro ao buscar fornecedores: {e}")
-        df_fornecedores = pd.DataFrame()
-    try:
-        response = requests.get(api_url + "clientes/")
-        clientes = response.json() if response.status_code == 200 else []
-        df_clientes = pd.DataFrame(clientes)
-    except Exception as e:
-        st.error(f"Erro ao buscar clientes: {e}")
-        df_clientes = pd.DataFrame()
-    try:
-        response = requests.get(api_url + "produtos/")
-        produtos = response.json() if response.status_code == 200 else []
-        df_produtos = pd.DataFrame(produtos)
-    except Exception as e:
-        st.error(f"Erro ao buscar produtos: {e}")
-        df_produtos = pd.DataFrame()
-        
-    try:
-        response = requests.get(api_url + "projetos/")
-        projetos = response.json() if response.status_code == 200 else []
-        df_projetos = pd.DataFrame(projetos)
-    except Exception as e:
-        st.error(f"Erro ao buscar projetos: {e}")
-        df_projetos = pd.DataFrame()
-    
-    try:
-        response = requests.get(api_url + "projetosprodutos/")
-        projetosprodutos = response.json() if response.status_code == 200 else []
-        df_projetosprodutos = pd.DataFrame(projetosprodutos)
-    except Exception as e:
-        st.error(f"Erro ao buscar os produtos de cada projeto: {e}")
-        df_projetosprodutos = pd.DataFrame()
+def mostrar_tabela(df, opcao, df_fornecedores, df_clientes, df_produtos, df_projetos, df_projetosprodutos):
     
     match opcao:
         case "Clientes":
@@ -168,6 +167,17 @@ def mostrar_tabela(df, opcao):
                     "quantidade_prod": "Quantidade"
                 }
                 df_projetosprodutos.rename(columns=colunas_rel, inplace=True)
+                
+                st.subheader("Itens no projeto")
+                
+                if projetos:
+                    options = [(p["id_proj"], f"{p['nome_proj']}") for p in projetos]
+                    selected = st.selectbox("Projeto", options, format_func=lambda x: x[1])
+                    projeto_id_proj = selected[0]
+                else:
+                    st.warning("Sem projetos cadastrados!")
+
+                df_projetosprodutos = df_projetosprodutos[df_projetosprodutos["Projeto"] == projeto_id_proj]
 
                 if not df_projetos.empty:
                     df_projetos_aux = df_projetos.rename(columns={"id_proj": "Projeto", "nome_proj": "Nome Projeto"})
@@ -191,24 +201,112 @@ def mostrar_tabela(df, opcao):
                 ordem = ["Nome Projeto", "Nome Fornecedor", "Nome Produto", "Quantidade"]
                 
                 df_projetosprodutos = df_projetosprodutos[ordem]
-                st.write(df_projetosprodutos)
-            
-                colunas_selecionadas = select(ordem)
-    
-                if not colunas_selecionadas:
-                    st.warning("Selecione as colunas para mostrar")
-                else:
-                    st.dataframe(df_projetosprodutos[colunas_selecionadas], use_container_width=True, column_order=ordem)
 
-def alteracao_dados(df, opcao):
+                if df_projetosprodutos.empty:
+                    st.info("Nenhum item cadastrado neste projeto.")
+                else:
+                    colunas_selecionadas = select(ordem)
+                    if not colunas_selecionadas:
+                        st.warning("Selecione as colunas para mostrar")
+                    else:
+                        st.dataframe(
+                            df_projetosprodutos[colunas_selecionadas],
+                            use_container_width=True,
+                            column_order=ordem
+                        )
+
+def listar_dados(ids, nome, msg, dataframe):
+    options = [(p[ids], p[nome]) for p in dataframe]
+    selected_row = st.selectbox(f"{msg} a excluir", options, format_func=lambda x: f"{x[1]} ({x[0]})")
     
-    col1, col2, col3 = st.columns([7, 1, 3])
-    
+    return selected_row[0]
+
+def remocao_dados(opcao):
     match opcao:
         case "Clientes":
-            st.write("Clientes selecionado")
+            selected_id_cli = listar_dados("id_cli", "nome_cli", "Cliente", clientes)
             
- 
+            if st.button("Deletar"):
+                try:
+                    response = requests.delete(f"{api_url}clientes/{int(selected_id_cli)}")
+                    if response.status_code == 200:
+                        st.success("Cliente deletado!")
+                        st.rerun()
+                    else:
+                        st.error("Erro ao deletar cliente")
+                except Exception as e:
+                    st.error(f"Erro ao conectar com a API: {e}")
+                    
+        case "Fornecedores":
+            selected_id_fornec = listar_dados("id_fornec", "nome_fornec", "Fornecedor", fornecedores)
+            
+            if st.button("Deletar"):
+                try:
+                    response = requests.delete(f"{api_url}fornecedores/{int(selected_id_fornec)}")
+                    if response.status_code == 200:
+                        st.success("Fornecedor deletado!")
+                        st.rerun()
+                    else:
+                        st.error("Erro ao deletar fornecedor")
+                except Exception as e:
+                    st.error(f"Erro ao conectar com a API: {e}")
+                    
+        case "Produtos":
+            selected_id_proj = listar_dados("id_prod", "nome_prod", "Produto", produtos)
+            
+            if st.button("Deletar"):
+                try:
+                    response = requests.delete(f"{api_url}produtos/{int(selected_id_proj)}")
+                    if response.status_code == 200:
+                        st.success("Produto deletado!")
+                        st.rerun()
+                    else:
+                        st.error("Erro ao deletar produto")
+                except Exception as e:
+                    st.error(f"Erro ao conectar com a API: {e}")
+                    
+        case "Projetos":
+            selected_id_proj = listar_dados("id_proj", "nome_proj", "Projeto", projetos)
+            
+            if st.button("Deletar"):
+                try:
+                    response = requests.delete(f"{api_url}projetos/{int(selected_id_proj)}")
+                    if response.status_code == 200:
+                        st.success("Projeto deletado!")
+                        st.rerun()
+                    else:
+                        st.error("Erro ao deletar projeto")
+                except Exception as e:
+                    st.error(f"Erro ao conectar com a API: {e}")
+            
+            remocao_dados(opcao = "ProjetosProdutos")
+        
+        case "ProjetosProdutos":
+            
+            try:
+                response = requests.get(api_url+"projetosprodutos/")
+                projetosprodutos = response.json() if response.status_code == 200 else []
+            except Exception as e:
+                st.error(f"Erro ao buscar projetos: {e}")
+            
+            if projetosprodutos:
+                selected_id_proj = st.selectbox("Projeto", [p["id_proj"] for p in projetos])
+                selected_id_prod = st.selectbox("Produto", [p["id_prod"] for p in produtos])
+                selected_id_fornec = st.selectbox("Fornecedor", [p["id_fornec"] for p in fornecedores])
+
+                if st.button("Deletar Produto", key="delete_prodproj"):
+                    try:
+                        response = requests.delete(
+                            f"{api_url}projetosprodutos/{selected_id_proj}/{selected_id_prod}/{selected_id_fornec}"
+                        )
+                        if response.status_code == 200:
+                            st.success("Item do projeto deletado!")
+                            st.rerun()
+                        else:
+                            st.error(f"Erro ao deletar: {response.text}")
+                    except Exception as e:
+                        st.error(f"Erro ao conectar com a API: {e}")
+
 if opcao:
     endpoint = endpoint_map[opcao]
     try:
@@ -217,8 +315,12 @@ if opcao:
             data = response.json()
             if data:
                 df = pd.DataFrame(data)
-                mostrar_tabela(df, opcao)
-                alteracao_dados(df, opcao)
+                col1, col2 = st.columns([8, 3]) 
+                with col1:
+                    mostrar_tabela(df, opcao, df_fornecedores, df_clientes, df_produtos, df_projetos, df_projetosprodutos)
+                with col2:
+                    remocao_dados(opcao)
+                        
             else:
                 st.info(f"Nenhum registro encontrado na tabela **{opcao}**.")
         else:
