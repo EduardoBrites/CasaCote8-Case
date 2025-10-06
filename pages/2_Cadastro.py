@@ -174,14 +174,12 @@ if tipoCadastro == "Projetos":
             "projeto_id_proj": projeto_id_proj,
             "produto_id_prod": produto_id_prod,
             "produto_fornecedor_id_fornec": produto_fornecedor_id_fornec,
-            "quantidade_produto": quantidade_prod
+            "quantidade_prod": quantidade_prod
             }
             try:
                 response = requests.post(api_url+"projetosprodutos/", json=projetoproduto_data)
                 if response.status_code == 200:
                     st.success("Produto cadastrado no projeto com sucesso!")
-                elif response.status_code == 500:
-                    st.error("Esse item ja esta vinculado ao projeto!")
                 else:
                     st.error(f"Erro ao cadastrar: {response.text}")
             except Exception as e:
