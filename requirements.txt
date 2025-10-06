@@ -2,3 +2,4 @@ sqlmodel
 fastapi
 uvicorn
 models
+plotly[express]
