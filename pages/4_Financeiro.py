@@ -10,9 +10,103 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    [data-testid=stSidebar] {
-        background-color: #ff000050;
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nata+Sans:wght@100..900&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 100;
+        font-size: 15px;
     }
+    
+    [data-testid="stSidebar"] {
+        background-color: #624837;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] a,  
+    [data-testid="stSidebar"] div {
+        margin-bottom: 7px;
+    }
+    
+    [data-testid="stSidebar"] a {
+    }
+
+    [data-testid="stSidebar"] a:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .subtext{
+        text-align: center;
+        border-bottom: 5px solid #365F61;
+        font-weight: normal !important;
+        font-size: 17px !important;
+        letter-spacing: 2px;
+        color: ##A18E82 !important;
+        padding: 3px 0 3px 0 !important;
+        border-radius: 2px;
+        text-transform: uppercase;
+    }
+    
+    .text{
+        text-align: justify;
+    }
+    
+    h1 {
+            text-align: center;
+            background-color: #A18E82;
+            font-weight: normal !important;
+            letter-spacing: 10px;
+            color: white !important;
+            padding: 10px 0 10px 0 !important;
+            width: 100%;    
+            border-radius: 2px;
+        }
+    
+    .stButton>button {
+        background-color: #365F61 !important;
+        color: white !important;
+        border-radius: 8px;
+        padding: 8px 20px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .stButton>button:hover {
+        background-color: #A1B4B5 !important; /* hover */
+    }
+    
+    .stButton.secondary>button {
+        background-color: white !important;
+        color: #365F61 !important;
+        border: 2px solid #365F61 !important;
+    }
+
+    .stButton.secondary>button:hover {
+        background-color: #A1B4B5 !important;
+        color: white !important;
+    }
+    
+    div[data-baseweb="select"] > div {
+        background-color: #A1B4B5 !important;
+        color: white !important;
+        border-radius: 6px;
+    }
+    
+    div[data-baseweb="select"] > div:focus-within {
+        outline: none !important;
+        box-shadow: none !important;
+        border: 2px solid transparent !important;
+    }
+
+    div[data-baseweb="select"] span {
+        color: white !important;
+    }
+    
 </style>
 """, unsafe_allow_html=True)
 
@@ -21,6 +115,12 @@ with st.sidebar:
     
     with col1:
         st.image("./assets/img/CasaCote8Logo.png", use_container_width=True)
+
+st.markdown("""
+    <h1>Financeiro</h1>
+""", unsafe_allow_html=True)
+
+st.divider()
 
 api_url = "http://127.0.0.1:8000"
 
@@ -45,7 +145,7 @@ def obter_lucro(projeto_id: int):
 
 projetos = listar_projetos()
 if not projetos:
-    st.warning("Nenhum projeto encontrado. Verifique se o backend está rodando e o endpoint /projetos/ existe.")
+    st.warning("Nenhum projeto encontrado.")
 else:
     options = {p.get("id_proj", p.get("id", None)): p.get("nome_proj", p.get("nome", "Projeto sem nome")) for p in projetos}
     projeto_id = st.selectbox("Selecione o projeto", options=list(options.keys()), format_func=lambda x: options.get(x, str(x)))

@@ -6,17 +6,109 @@ from sqlmodel import Session
 from database.model import Cliente, Fornecedor, Produto, Projeto, ProjetoProduto
 from database.banco import engine
 
-st.set_page_config(
-    page_title="CasaCote8 - Cadastro", 
-    layout="wide")
-
 st.markdown("""
 <style>
-    [data-testid=stSidebar] {
-        background-color: #ff000050;
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nata+Sans:wght@100..900&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 100;
+        font-size: 15px;
     }
+    
+    [data-testid="stSidebar"] {
+        background-color: #624837;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] a,  
+    [data-testid="stSidebar"] div {
+        margin-bottom: 7px;
+    }
+    
+    [data-testid="stSidebar"] a {
+    }
+
+    [data-testid="stSidebar"] a:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .subtext{
+        text-align: center;
+        border-bottom: 5px solid #365F61;
+        font-weight: normal !important;
+        font-size: 17px !important;
+        letter-spacing: 2px;
+        color: ##A18E82 !important;
+        padding: 3px 0 3px 0 !important;
+        border-radius: 2px;
+        text-transform: uppercase;
+    }
+    
+    .text{
+        text-align: justify;
+    }
+    
+    h1 {
+            text-align: center;
+            background-color: #A18E82;
+            font-weight: normal !important;
+            letter-spacing: 10px;
+            color: white !important;
+            padding: 10px 0 10px 0 !important;
+            width: 100%;    
+            border-radius: 2px;
+    }
+    
+    .stButton>button {
+        background-color: #365F61 !important;
+        color: white !important;
+        border-radius: 8px;
+        padding: 8px 20px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .stButton>button:hover {
+        background-color: #A1B4B5 !important; /* hover */
+    }
+    
+    .stButton.secondary>button {
+        background-color: white !important;
+        color: #365F61 !important;
+        border: 2px solid #365F61 !important;
+    }
+
+    .stButton.secondary>button:hover {
+        background-color: #A1B4B5 !important;
+        color: white !important;
+    }
+    
+    div[data-baseweb="select"] > div {
+        background-color: #A1B4B5 !important;
+        color: white !important;
+        border-radius: 6px;
+    }
+    
+    div[data-baseweb="select"] > div:focus-within {
+        outline: none !important;
+        box-shadow: none !important;
+        border: 2px solid transparent !important;
+    }
+
+    div[data-baseweb="select"] span {
+        color: white !important;
+    }
+    
 </style>
 """, unsafe_allow_html=True)
+
+
 
 ##API
 api_url = "http://127.0.0.1:8000/"
@@ -27,7 +119,9 @@ with st.sidebar:
     with col1:
         st.image("./assets/img/CasaCote8Logo.png", use_container_width=True)
 
-st.title("Cadastro de informações")
+st.markdown("""
+    <h1>Cadastro</h1>
+""", unsafe_allow_html=True)
 st.divider()
 
 col1, col2, col3 = st.columns([1, 5, 1])
@@ -78,7 +172,7 @@ if tipoCadastro == "Projetos":
         else:
             st.warning("Sem clientes cadastrados!")
             
-        if st.button(label = "Cadastrar projeto", type="primary"):
+        if st.button(label = "Cadastrar projeto", type="primary") and clientes:
             projeto_data = {
                 "nome_proj": nome_proj,
                 "cliente_id_cli": cliente_id_cli,
@@ -137,7 +231,7 @@ if tipoCadastro == "Projetos":
             st.warning("Sem produtos cadastrados!")
         
         quantidade_prod = st.number_input(label="Quantidade", format="%0i")
-        if st.button(label = "Adicionar"):
+        if st.button(label = "Adicionar") and projetos and produtos and fornecedores:
             projetoproduto_data = {
             "projeto_id_proj": projeto_id_proj,
             "produto_id_prod": produto_id_prod,
@@ -182,7 +276,7 @@ if tipoCadastro == "Produtos":
         
     with col3:
         observacao_prod = st.text_area(label = "Observação", placeholder = "Insira aqui informações edicionais sobre o produto")
-        if st.button(label = "Cadastrar produto", type = "primary"):
+        if st.button(label = "Cadastrar produto", type = "primary") and fornecedores:
             produto_data = {
                 "fornecedor_id_fornec": fornecedor_id_fornec,
                 "nome_prod": nome_prod,
